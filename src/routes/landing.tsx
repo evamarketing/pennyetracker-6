@@ -77,7 +77,11 @@ function Landing() {
               <CardDescription className="text-sm leading-relaxed">{description}</CardDescription>
             </CardContent>
           </Card>
-        ))}
+          );
+          return to ? (
+            <Link key={title} to={to} className="block">{card}</Link>
+          ) : card;
+        })}
       </section>
     </main>
   );
