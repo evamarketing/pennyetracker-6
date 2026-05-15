@@ -208,6 +208,7 @@ function AddStaffDialog({ panchayaths, wards, onClose }: { panchayaths: any[]; w
       <div className="grid gap-3">
         <Field label="Full name" value={form.full_name} onChange={(v) => setForm({ ...form, full_name: v })} />
         <Field label="Phone" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
+        <Field label="Alternate mobile (optional)" value={form.alt_phone} onChange={(v) => setForm({ ...form, alt_phone: v })} />
         <Field label="Email (optional)" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
 
         <div className="grid grid-cols-2 gap-3">
