@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Plus, ChevronRight, Trash2 } from "lucide-react";
+import { Plus, ChevronRight, Trash2, Pencil, Check, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/locations")({ component: Locations });
@@ -131,6 +131,32 @@ function Column({
     onError: (e: any) => toast.error(e.message),
   });
 
+  const update = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: Record<string, any> }) => {
+      const { error } = await supabase.from(table).update(patch as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: [table, parentId] }); toast.success("Updated"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editExtra, setEditExtra] = useState("");
+
+  const startEdit = (row: any) => {
+    setEditingId(row.id);
+    setEditName(row.name ?? "");
+    setEditExtra(extraField ? String(row[extraField.key] ?? "") : "");
+  };
+  const cancelEdit = () => { setEditingId(null); setEditName(""); setEditExtra(""); };
+  const saveEdit = (id: string) => {
+    const patch: Record<string, any> = { name: editName };
+    // Only allow editing ward_number on wards (not ward_count seed field on panchayaths)
+    if (extraField && table === "wards") patch[extraField.key] = editExtra || null;
+    update.mutate({ id, patch }, { onSuccess: () => cancelEdit() });
+  };
+
   return (
     <Card className={!enabled ? "opacity-50" : ""}>
       <CardHeader className="pb-3"><CardTitle className="text-base">{title}</CardTitle></CardHeader>
@@ -148,6 +174,25 @@ function Column({
           {!enabled && <p className="text-xs text-muted-foreground">Select a {parentField?.replace("_id", "")} first</p>}
           {data.map((row: any) => {
             const active = row.id === selectedId;
+            const isEditing = editingId === row.id;
+            if (isEditing) {
+              return (
+                <div key={row.id} className="space-y-1 rounded-md border p-2">
+                  <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Name" className="h-8" />
+                  {extraField && table === "wards" && (
+                    <Input value={editExtra} onChange={(e) => setEditExtra(e.target.value)} placeholder={extraField.label} className="h-8" />
+                  )}
+                  <div className="flex gap-1">
+                    <Button size="sm" className="h-7 flex-1" onClick={() => saveEdit(row.id)} disabled={!editName || update.isPending}>
+                      <Check className="h-3.5 w-3.5" /> Save
+                    </Button>
+                    <Button size="sm" variant="outline" className="h-7" onClick={cancelEdit}>
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            }
             return (
               <div
                 key={row.id}
@@ -157,8 +202,16 @@ function Column({
                 <span className="truncate">{row.name}{row.ward_number ? ` (#${row.ward_number})` : ""}</span>
                 <div className="flex items-center gap-1">
                   <button
+                    onClick={(e) => { e.stopPropagation(); startEdit(row); }}
+                    className="opacity-0 transition-opacity group-hover:opacity-100"
+                    title="Edit"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                  <button
                     onClick={(e) => { e.stopPropagation(); del.mutate(row.id); }}
                     className="opacity-0 transition-opacity group-hover:opacity-100"
+                    title="Delete"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
