@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { Bike, MapPin, User, Phone, Home } from "lucide-react";
-import { getPublicDeliveryPartners } from "@/lib/delivery-partners.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/delivery-partners")({
   component: DeliveryPartnersPage,
@@ -13,6 +12,20 @@ export const Route = createFileRoute("/delivery-partners")({
     ],
   }),
 });
+
+type PartnerWard = { name: string; ward_number: string | null };
+type Partner = {
+  id: string;
+  full_name: string;
+  phone: string;
+  alt_phone: string | null;
+  wards: PartnerWard[];
+};
+type PanchayathGroup = {
+  panchayath_id: string;
+  panchayath_name: string;
+  partners: Partner[];
+};
 
 const PALETTE = [
   { chip: "bg-emerald-600", card: "bg-emerald-50", icon: "text-emerald-600" },
@@ -26,16 +39,18 @@ const PALETTE = [
 ];
 
 function DeliveryPartnersPage() {
-  const fetchPartners = useServerFn(getPublicDeliveryPartners);
-  const { data: groups = [], isLoading } = useQuery({
+  const { data: groups = [], isLoading, error } = useQuery({
     queryKey: ["public-delivery-partners"],
-    queryFn: () => fetchPartners(),
+    queryFn: async (): Promise<PanchayathGroup[]> => {
+      const { data, error } = await supabase.rpc("get_public_delivery_partners");
+      if (error) throw error;
+      return (data as PanchayathGroup[] | null) ?? [];
+    },
   });
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-12">
       <div className="mx-auto max-w-3xl px-4 pt-6">
-        {/* Banner */}
         <div className="flex items-center gap-3 rounded-xl bg-[oklch(0.25_0.08_260)] px-5 py-4 text-white shadow-md">
           <div className="rounded-lg bg-white/15 p-2">
             <Bike className="h-6 w-6" />
@@ -44,7 +59,10 @@ function DeliveryPartnersPage() {
         </div>
 
         {isLoading && <p className="mt-8 text-center text-muted-foreground">Loading…</p>}
-        {!isLoading && groups.length === 0 && (
+        {error && (
+          <p className="mt-8 text-center text-destructive">Failed to load: {(error as Error).message}</p>
+        )}
+        {!isLoading && !error && groups.length === 0 && (
           <p className="mt-8 text-center text-muted-foreground">No delivery partners yet.</p>
         )}
 
@@ -83,9 +101,7 @@ function DeliveryPartnersPage() {
                           <div>
                             <span className="text-muted-foreground">Wards: </span>
                             <span className="font-medium">
-                              {p.wards
-                                .map((w) => w.ward_number ?? w.name)
-                                .join(", ")}
+                              {p.wards.map((w) => w.ward_number ?? w.name).join(", ")}
                             </span>
                           </div>
                         </div>
