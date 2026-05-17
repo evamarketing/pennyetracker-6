@@ -1,89 +1,35 @@
 ## Goal
 
-Add a new map-based marking feature where admins can place a geographic point (latitude/longitude) for each panchayath and each ward on a Google Map. The Google Maps API key is configured in an Admin Settings page. Pins are stored in the database and cached in the browser (IndexedDB) for offline viewing.
+On the `/landing` page, add a new feature card that opens a public, read-only Google Map showing all panchayaths that already have a saved location.
 
-Polygon boundaries are out of scope for this iteration (point-only, as requested).
+Today, marked locations only exist behind the admin pages (`/admin/mapping/panchayath`). This makes them visible to any visitor.
 
-## Database changes
+## Changes
 
-1. New table `app_settings` (single-row key/value store for admin config):
-   - `key text primary key`, `value text`, `updated_at timestamptz`
-   - RLS: only admins can select/update. Used to store `google_maps_api_key`.
+### 1. New public route: `src/routes/map.panchayath.tsx`
+- Path: `/map/panchayath`
+- Loads the Google Maps API key from `app_settings` via the existing `useGoogleMapsKey` hook.
+- Queries `panchayaths` (id, name, district_id, latitude, longitude) where `latitude` and `longitude` are not null.
+- Renders a full-height Google Map with one marker per panchayath. Marker tooltip = panchayath name. Map auto-fits bounds to all markers; falls back to Kerala default if none.
+- Read-only: no click-to-place, no edit controls, no auth required.
+- Uses the same `useGoogleMaps` loader hook as the admin picker.
+- Hydrates instantly from the IndexedDB cache (`loadCachedPoints("panchayath")`) on mount, then refreshes from Supabase.
+- Empty state: "No panchayath locations have been marked yet."
+- Missing key state: "Map is not configured yet. Ask an admin to set the Google Maps API key."
 
-2. Add columns to existing tables:
-   - `panchayaths`: `latitude double precision`, `longitude double precision`, `location_updated_at timestamptz`
-   - `wards`: `latitude double precision`, `longitude double precision`, `location_updated_at timestamptz`
+### 2. New card on `/landing`
+- Add a 5th card titled **"Panchayath Map"** to the `features` array in `src/routes/landing.tsx`.
+- Icon: `Map` (lucide-react).
+- Links to `/map/panchayath`.
+- Reuses an existing gradient style for visual consistency.
 
-3. Indexes on `(latitude, longitude)` for both tables (lightweight, no PostGIS needed).
+## Notes
 
-## Backend (server functions in `src/lib/`)
+- No DB changes; reuses existing `panchayaths.latitude/longitude` columns and `app_settings.google_maps_api_key`.
+- Public RLS on `panchayaths` is `authenticated`-only today. If we want this map fully public (no login), we'll need to either (a) add a public SELECT policy filtered to rows with non-null lat/lng, or (b) expose the data through a `SECURITY DEFINER` SQL function similar to `get_public_delivery_partners`. **Assumption: option (a)** — add a permissive public read policy limited to marked rows. Tell me if you'd rather keep it auth-only and I'll skip that migration.
+- Google Maps key is read from `app_settings` (admin-only RLS). For an unauthenticated viewer we'd need a small change: a public `get_public_google_maps_key()` SQL function, or move the key to an `import.meta.env.VITE_*` value. **Assumption: add a `SECURITY DEFINER` function** that returns just that one key so the public viewer page can load the map. Tell me if you'd prefer the env-var route or want to keep the map admin-only.
 
-- `settings.functions.ts`
-  - `getPublicSettings()` — returns only the Google Maps API key (used by the map UI, key is meant to be referrer-restricted in Google Cloud Console so it's safe to expose to the admin browser).
-  - `updateSetting({ key, value })` — admin-only, uses `requireSupabaseAuth` + admin check.
-- `geo.functions.ts`
-  - `updatePanchayathLocation({ id, lat, lng })`
-  - `updateWardLocation({ id, lat, lng })`
-  - `listPanchayathLocations()` / `listWardLocations()` — return id, name, parent ids, lat, lng for offline cache hydration.
+## Out of scope
 
-All mutations validated with Zod (lat ∈ [-90, 90], lng ∈ [-180, 180]) and gated by admin role.
-
-## Frontend
-
-### New route: `src/routes/admin.settings.tsx`
-- Form with one field: **Google Maps API key**.
-- Link/help text explaining how to create a key in Google Cloud Console and restrict it by HTTP referrer to the app domain.
-- Save button → calls `updateSetting`.
-
-### New route: `src/routes/admin.mapping.tsx` (map hub)
-- Two cards like `/marking`: "Panchayath Map" and "Ward Map".
-
-### New route: `src/routes/admin.mapping.panchayath.tsx`
-- Loads Google Maps JS API dynamically using the key from settings. If no key is configured, shows a banner: "Add your Google Maps API key in Admin → Settings".
-- Left panel: list of panchayaths (filter by district), each row shows "Marked" or "Not marked".
-- Right panel: Google Map.
-  - Click a panchayath → map centers on its pin (or default region center if none).
-  - Click anywhere on the map → places a draggable pin and shows "Save location" / "Cancel".
-  - **"Use my current location"** button → calls `navigator.geolocation.getCurrentPosition`, drops a pin at the device location, ready to save.
-  - Saving calls `updatePanchayathLocation` and updates the IndexedDB cache.
-
-### New route: `src/routes/admin.mapping.ward.tsx`
-- Same UX, scoped by selected panchayath, working on `wards`.
-
-### Offline cache (`src/lib/geoCache.ts`)
-- Thin wrapper around IndexedDB (via `idb-keyval`, ~600 B) storing two keys: `panchayath_locations` and `ward_locations` (arrays of `{id, name, parent_id, lat, lng}`).
-- On map page mount: render cached pins immediately, then fetch fresh data from the server function in the background and update cache + UI.
-- If the user is offline, the map still renders the cached pins (Google tiles will only load when online, but pins/list remain usable).
-
-### Navigation
-- Add a "Mapping" item and a "Settings" item to the admin sidebar/nav (wherever `/admin/locations` is linked today).
-
-## Technical notes
-
-- **Why Google key in DB instead of env var:** the user explicitly asked for admin-configurable. The key is a browser-side key and should be locked down by HTTP referrer restrictions in Google Cloud Console. We document this in the Settings page.
-- **No new npm packages required for Google Maps** — we load the JS API via a `<script>` tag injected on demand (standard pattern), so no `@react-google-maps/api` dependency.
-- **IndexedDB**: add `idb-keyval` (tiny, ~600 B). Avoids hand-rolled IDB code.
-- **RLS**: continue using the project's existing admin/role check pattern (the existing `admin.*` routes already gate access).
-- Polygon support, search/geocoding, and clustering are deliberately out of scope for this iteration.
-
-## Files to add/change
-
-Add:
-- `src/routes/admin.settings.tsx`
-- `src/routes/admin.mapping.tsx`
-- `src/routes/admin.mapping.panchayath.tsx`
-- `src/routes/admin.mapping.ward.tsx`
-- `src/components/map/GoogleMap.tsx` (loader + map wrapper)
-- `src/components/map/MapPicker.tsx` (shared list-+-map UI used by both pages)
-- `src/lib/settings.functions.ts`
-- `src/lib/geo.functions.ts`
-- `src/lib/geoCache.ts`
-- DB migration for `app_settings` + new lat/lng columns + RLS
-
-Change:
-- Admin nav/sidebar — add "Mapping" and "Settings" entries.
-
-## Open assumptions (will proceed unless you object)
-
-- The Google Maps key, once set by an admin, is fetched by any admin user and used in their browser (standard for client-side Maps keys; security comes from referrer restriction).
-- Default map center: derived from the first existing marked panchayath, else a Kerala-region fallback (`10.85, 76.27`, zoom 7).
+- Ward map viewer (can be added the same way later).
+- Clustering, search, polygons, directions.
