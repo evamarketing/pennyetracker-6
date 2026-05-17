@@ -18,6 +18,7 @@ import { Route as MarkingIndexRouteImport } from './routes/marking.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as MarkingWardRouteImport } from './routes/marking.ward'
 import { Route as MarkingPanchayathRouteImport } from './routes/marking.panchayath'
+import { Route as MapPanchayathRouteImport } from './routes/map.panchayath'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminStaffRouteImport } from './routes/admin.staff'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
@@ -71,6 +72,11 @@ const MarkingPanchayathRoute = MarkingPanchayathRouteImport.update({
   path: '/marking/panchayath',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MapPanchayathRoute = MapPanchayathRouteImport.update({
+  id: '/map/panchayath',
+  path: '/map/panchayath',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/staff': typeof AdminStaffRoute
   '/admin/users': typeof AdminUsersRoute
+  '/map/panchayath': typeof MapPanchayathRoute
   '/marking/panchayath': typeof MarkingPanchayathRoute
   '/marking/ward': typeof MarkingWardRoute
   '/admin/': typeof AdminIndexRoute
@@ -135,6 +142,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/staff': typeof AdminStaffRoute
   '/admin/users': typeof AdminUsersRoute
+  '/map/panchayath': typeof MapPanchayathRoute
   '/marking/panchayath': typeof MarkingPanchayathRoute
   '/marking/ward': typeof MarkingWardRoute
   '/admin': typeof AdminIndexRoute
@@ -154,6 +162,7 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/staff': typeof AdminStaffRoute
   '/admin/users': typeof AdminUsersRoute
+  '/map/panchayath': typeof MapPanchayathRoute
   '/marking/panchayath': typeof MarkingPanchayathRoute
   '/marking/ward': typeof MarkingWardRoute
   '/admin/': typeof AdminIndexRoute
@@ -174,6 +183,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/staff'
     | '/admin/users'
+    | '/map/panchayath'
     | '/marking/panchayath'
     | '/marking/ward'
     | '/admin/'
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/staff'
     | '/admin/users'
+    | '/map/panchayath'
     | '/marking/panchayath'
     | '/marking/ward'
     | '/admin'
@@ -209,6 +220,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/staff'
     | '/admin/users'
+    | '/map/panchayath'
     | '/marking/panchayath'
     | '/marking/ward'
     | '/admin/'
@@ -223,6 +235,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   DeliveryPartnersRoute: typeof DeliveryPartnersRoute
   LandingRoute: typeof LandingRoute
+  MapPanchayathRoute: typeof MapPanchayathRoute
   MarkingPanchayathRoute: typeof MarkingPanchayathRoute
   MarkingWardRoute: typeof MarkingWardRoute
   MarkingIndexRoute: typeof MarkingIndexRoute
@@ -291,6 +304,13 @@ declare module '@tanstack/react-router' {
       path: '/marking/panchayath'
       fullPath: '/marking/panchayath'
       preLoaderRoute: typeof MarkingPanchayathRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map/panchayath': {
+      id: '/map/panchayath'
+      path: '/map/panchayath'
+      fullPath: '/map/panchayath'
+      preLoaderRoute: typeof MapPanchayathRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/users': {
@@ -385,6 +405,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   DeliveryPartnersRoute: DeliveryPartnersRoute,
   LandingRoute: LandingRoute,
+  MapPanchayathRoute: MapPanchayathRoute,
   MarkingPanchayathRoute: MarkingPanchayathRoute,
   MarkingWardRoute: MarkingWardRoute,
   MarkingIndexRoute: MarkingIndexRoute,
@@ -392,3 +413,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

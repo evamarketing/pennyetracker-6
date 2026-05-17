@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Truck, MapPin, Navigation, MapPinned } from "lucide-react";
+import { Truck, MapPin, Navigation, MapPinned, Map } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 export const Route = createFileRoute("/landing")({
@@ -42,6 +42,12 @@ const features = [
     title: "Panchayath & Ward Marking",
     to: "/marking" as const,
     gradient: "from-[oklch(0.55_0.22_150)] via-[oklch(0.6_0.22_170)] to-[oklch(0.65_0.2_200)]",
+  },
+  {
+    icon: Map,
+    title: "Panchayath Map",
+    to: "/map/panchayath" as const,
+    gradient: "from-[oklch(0.55_0.2_300)] via-[oklch(0.6_0.22_330)] to-[oklch(0.65_0.2_10)]",
   },
 ];
 
