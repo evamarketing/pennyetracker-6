@@ -20,7 +20,11 @@ import { Route as MarkingWardRouteImport } from './routes/marking.ward'
 import { Route as MarkingPanchayathRouteImport } from './routes/marking.panchayath'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminStaffRouteImport } from './routes/admin.staff'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminMappingRouteImport } from './routes/admin.mapping'
 import { Route as AdminLocationsRouteImport } from './routes/admin.locations'
+import { Route as AdminMappingWardRouteImport } from './routes/admin.mapping.ward'
+import { Route as AdminMappingPanchayathRouteImport } from './routes/admin.mapping.panchayath'
 
 const LandingRoute = LandingRouteImport.update({
   id: '/landing',
@@ -77,10 +81,30 @@ const AdminStaffRoute = AdminStaffRouteImport.update({
   path: '/staff',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMappingRoute = AdminMappingRouteImport.update({
+  id: '/mapping',
+  path: '/mapping',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLocationsRoute = AdminLocationsRouteImport.update({
   id: '/locations',
   path: '/locations',
   getParentRoute: () => AdminRoute,
+} as any)
+const AdminMappingWardRoute = AdminMappingWardRouteImport.update({
+  id: '/ward',
+  path: '/ward',
+  getParentRoute: () => AdminMappingRoute,
+} as any)
+const AdminMappingPanchayathRoute = AdminMappingPanchayathRouteImport.update({
+  id: '/panchayath',
+  path: '/panchayath',
+  getParentRoute: () => AdminMappingRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -90,12 +114,16 @@ export interface FileRoutesByFullPath {
   '/delivery-partners': typeof DeliveryPartnersRoute
   '/landing': typeof LandingRoute
   '/admin/locations': typeof AdminLocationsRoute
+  '/admin/mapping': typeof AdminMappingRouteWithChildren
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/staff': typeof AdminStaffRoute
   '/admin/users': typeof AdminUsersRoute
   '/marking/panchayath': typeof MarkingPanchayathRoute
   '/marking/ward': typeof MarkingWardRoute
   '/admin/': typeof AdminIndexRoute
   '/marking/': typeof MarkingIndexRoute
+  '/admin/mapping/panchayath': typeof AdminMappingPanchayathRoute
+  '/admin/mapping/ward': typeof AdminMappingWardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -103,12 +131,16 @@ export interface FileRoutesByTo {
   '/delivery-partners': typeof DeliveryPartnersRoute
   '/landing': typeof LandingRoute
   '/admin/locations': typeof AdminLocationsRoute
+  '/admin/mapping': typeof AdminMappingRouteWithChildren
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/staff': typeof AdminStaffRoute
   '/admin/users': typeof AdminUsersRoute
   '/marking/panchayath': typeof MarkingPanchayathRoute
   '/marking/ward': typeof MarkingWardRoute
   '/admin': typeof AdminIndexRoute
   '/marking': typeof MarkingIndexRoute
+  '/admin/mapping/panchayath': typeof AdminMappingPanchayathRoute
+  '/admin/mapping/ward': typeof AdminMappingWardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -118,12 +150,16 @@ export interface FileRoutesById {
   '/delivery-partners': typeof DeliveryPartnersRoute
   '/landing': typeof LandingRoute
   '/admin/locations': typeof AdminLocationsRoute
+  '/admin/mapping': typeof AdminMappingRouteWithChildren
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/staff': typeof AdminStaffRoute
   '/admin/users': typeof AdminUsersRoute
   '/marking/panchayath': typeof MarkingPanchayathRoute
   '/marking/ward': typeof MarkingWardRoute
   '/admin/': typeof AdminIndexRoute
   '/marking/': typeof MarkingIndexRoute
+  '/admin/mapping/panchayath': typeof AdminMappingPanchayathRoute
+  '/admin/mapping/ward': typeof AdminMappingWardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -134,12 +170,16 @@ export interface FileRouteTypes {
     | '/delivery-partners'
     | '/landing'
     | '/admin/locations'
+    | '/admin/mapping'
+    | '/admin/settings'
     | '/admin/staff'
     | '/admin/users'
     | '/marking/panchayath'
     | '/marking/ward'
     | '/admin/'
     | '/marking/'
+    | '/admin/mapping/panchayath'
+    | '/admin/mapping/ward'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -147,12 +187,16 @@ export interface FileRouteTypes {
     | '/delivery-partners'
     | '/landing'
     | '/admin/locations'
+    | '/admin/mapping'
+    | '/admin/settings'
     | '/admin/staff'
     | '/admin/users'
     | '/marking/panchayath'
     | '/marking/ward'
     | '/admin'
     | '/marking'
+    | '/admin/mapping/panchayath'
+    | '/admin/mapping/ward'
   id:
     | '__root__'
     | '/'
@@ -161,12 +205,16 @@ export interface FileRouteTypes {
     | '/delivery-partners'
     | '/landing'
     | '/admin/locations'
+    | '/admin/mapping'
+    | '/admin/settings'
     | '/admin/staff'
     | '/admin/users'
     | '/marking/panchayath'
     | '/marking/ward'
     | '/admin/'
     | '/marking/'
+    | '/admin/mapping/panchayath'
+    | '/admin/mapping/ward'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -259,6 +307,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminStaffRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/mapping': {
+      id: '/admin/mapping'
+      path: '/mapping'
+      fullPath: '/admin/mapping'
+      preLoaderRoute: typeof AdminMappingRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/locations': {
       id: '/admin/locations'
       path: '/locations'
@@ -266,11 +328,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLocationsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/mapping/ward': {
+      id: '/admin/mapping/ward'
+      path: '/ward'
+      fullPath: '/admin/mapping/ward'
+      preLoaderRoute: typeof AdminMappingWardRouteImport
+      parentRoute: typeof AdminMappingRoute
+    }
+    '/admin/mapping/panchayath': {
+      id: '/admin/mapping/panchayath'
+      path: '/panchayath'
+      fullPath: '/admin/mapping/panchayath'
+      preLoaderRoute: typeof AdminMappingPanchayathRouteImport
+      parentRoute: typeof AdminMappingRoute
+    }
   }
 }
 
+interface AdminMappingRouteChildren {
+  AdminMappingPanchayathRoute: typeof AdminMappingPanchayathRoute
+  AdminMappingWardRoute: typeof AdminMappingWardRoute
+}
+
+const AdminMappingRouteChildren: AdminMappingRouteChildren = {
+  AdminMappingPanchayathRoute: AdminMappingPanchayathRoute,
+  AdminMappingWardRoute: AdminMappingWardRoute,
+}
+
+const AdminMappingRouteWithChildren = AdminMappingRoute._addFileChildren(
+  AdminMappingRouteChildren,
+)
+
 interface AdminRouteChildren {
   AdminLocationsRoute: typeof AdminLocationsRoute
+  AdminMappingRoute: typeof AdminMappingRouteWithChildren
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminStaffRoute: typeof AdminStaffRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -278,6 +370,8 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminLocationsRoute: AdminLocationsRoute,
+  AdminMappingRoute: AdminMappingRouteWithChildren,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminStaffRoute: AdminStaffRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
