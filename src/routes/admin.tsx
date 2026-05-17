@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate, useLocation } from "@tansta
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, MapPin, ShieldCheck, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, MapPin, Map, Settings, ShieldCheck, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin")({
@@ -14,6 +14,8 @@ const nav = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/staff", label: "Delivery Staff", icon: Users },
   { to: "/admin/locations", label: "Locations", icon: MapPin },
+  { to: "/admin/mapping", label: "Mapping", icon: Map },
+  { to: "/admin/settings", label: "Settings", icon: Settings },
   { to: "/admin/users", label: "Roles", icon: ShieldCheck, superOnly: true },
 ];
 
