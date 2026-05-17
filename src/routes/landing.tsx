@@ -37,6 +37,12 @@ const features = [
     to: null,
     gradient: "from-[oklch(0.6_0.2_180)] via-[oklch(0.65_0.2_210)] to-[oklch(0.7_0.2_240)]",
   },
+  {
+    icon: MapPinned,
+    title: "Panchayath & Ward Marking",
+    to: "/marking" as const,
+    gradient: "from-[oklch(0.55_0.22_150)] via-[oklch(0.6_0.22_170)] to-[oklch(0.65_0.2_200)]",
+  },
 ];
 
 function Landing() {
