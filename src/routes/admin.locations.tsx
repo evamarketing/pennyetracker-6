@@ -1,11 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Plus, ChevronRight, Trash2, Pencil, Check, X } from "lucide-react";
+import { Plus, ChevronRight, Trash2, Pencil, Check, X, MapPin, Map as MapIcon } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/locations")({ component: Locations });
@@ -17,8 +17,34 @@ function Locations() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold tracking-tight">Locations</h1>
-      <p className="mt-1 text-sm text-muted-foreground">State → District → Panchayath → Ward</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Locations</h1>
+          <p className="mt-1 text-sm text-muted-foreground">State → District → Panchayath → Ward</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" asChild>
+            <Link to="/admin/mapping/panchayath"><MapPin className="h-3.5 w-3.5" /> Map panchayaths</Link>
+          </Button>
+          <Button size="sm" variant="outline" asChild>
+            <Link to="/admin/mapping/ward"><MapIcon className="h-3.5 w-3.5" /> Map wards</Link>
+          </Button>
+        </div>
+      </div>
+      <Card className="mt-4 border-dashed bg-muted/30">
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <MapPin className="h-4 w-4 text-primary" />
+            <span>
+              Pin panchayaths and wards on Google Maps. Use device location or click the map. Pins are
+              cached on this device for offline viewing.
+            </span>
+          </div>
+          <Button size="sm" variant="ghost" asChild>
+            <Link to="/admin/settings">Set API key <ChevronRight className="h-3.5 w-3.5" /></Link>
+          </Button>
+        </CardContent>
+      </Card>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-4">
         <Column
