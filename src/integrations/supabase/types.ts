@@ -16,18 +16,21 @@ export type Database = {
     Tables: {
       app_settings: {
         Row: {
+          id: string
           key: string
           updated_at: string
           updated_by: string | null
           value: string | null
         }
         Insert: {
+          id?: string
           key: string
           updated_at?: string
           updated_by?: string | null
           value?: string | null
         }
         Update: {
+          id?: string
           key?: string
           updated_at?: string
           updated_by?: string | null
@@ -192,21 +195,21 @@ export type Database = {
       panchayath_connections: {
         Row: {
           created_at: string
-          direction: string
+          direction: Database["public"]["Enums"]["connection_direction"]
           id: string
           source_panchayath_id: string
           target_panchayath_id: string
         }
         Insert: {
           created_at?: string
-          direction: string
+          direction: Database["public"]["Enums"]["connection_direction"]
           id?: string
           source_panchayath_id: string
           target_panchayath_id: string
         }
         Update: {
           created_at?: string
-          direction?: string
+          direction?: Database["public"]["Enums"]["connection_direction"]
           id?: string
           source_panchayath_id?: string
           target_panchayath_id?: string
@@ -233,27 +236,18 @@ export type Database = {
           created_at: string
           district_id: string
           id: string
-          latitude: number | null
-          location_updated_at: string | null
-          longitude: number | null
           name: string
         }
         Insert: {
           created_at?: string
           district_id: string
           id?: string
-          latitude?: number | null
-          location_updated_at?: string | null
-          longitude?: number | null
           name: string
         }
         Update: {
           created_at?: string
           district_id?: string
           id?: string
-          latitude?: number | null
-          location_updated_at?: string | null
-          longitude?: number | null
           name?: string
         }
         Relationships: [
@@ -338,21 +332,21 @@ export type Database = {
       ward_connections: {
         Row: {
           created_at: string
-          direction: string
+          direction: Database["public"]["Enums"]["connection_direction"]
           id: string
           source_ward_id: string
           target_ward_id: string
         }
         Insert: {
           created_at?: string
-          direction: string
+          direction: Database["public"]["Enums"]["connection_direction"]
           id?: string
           source_ward_id: string
           target_ward_id: string
         }
         Update: {
           created_at?: string
-          direction?: string
+          direction?: Database["public"]["Enums"]["connection_direction"]
           id?: string
           source_ward_id?: string
           target_ward_id?: string
@@ -378,9 +372,6 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          latitude: number | null
-          location_updated_at: string | null
-          longitude: number | null
           name: string
           panchayath_id: string
           ward_number: string | null
@@ -388,9 +379,6 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
-          latitude?: number | null
-          location_updated_at?: string | null
-          longitude?: number | null
           name: string
           panchayath_id: string
           ward_number?: string | null
@@ -398,9 +386,6 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
-          latitude?: number | null
-          location_updated_at?: string | null
-          longitude?: number | null
           name?: string
           panchayath_id?: string
           ward_number?: string | null
@@ -429,10 +414,15 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      opposite_direction: {
+        Args: { _dir: Database["public"]["Enums"]["connection_direction"] }
+        Returns: Database["public"]["Enums"]["connection_direction"]
+      }
       promote_to_super_admin: { Args: { _email: string }; Returns: undefined }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "delivery"
+      connection_direction: "north" | "south" | "east" | "west"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -561,6 +551,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["super_admin", "admin", "delivery"],
+      connection_direction: ["north", "south", "east", "west"],
     },
   },
 } as const
