@@ -236,18 +236,27 @@ export type Database = {
           created_at: string
           district_id: string
           id: string
+          latitude: number | null
+          location_updated_at: string | null
+          longitude: number | null
           name: string
         }
         Insert: {
           created_at?: string
           district_id: string
           id?: string
+          latitude?: number | null
+          location_updated_at?: string | null
+          longitude?: number | null
           name: string
         }
         Update: {
           created_at?: string
           district_id?: string
           id?: string
+          latitude?: number | null
+          location_updated_at?: string | null
+          longitude?: number | null
           name?: string
         }
         Relationships: [
@@ -372,6 +381,9 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          latitude: number | null
+          location_updated_at: string | null
+          longitude: number | null
           name: string
           panchayath_id: string
           ward_number: string | null
@@ -379,6 +391,9 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          latitude?: number | null
+          location_updated_at?: string | null
+          longitude?: number | null
           name: string
           panchayath_id: string
           ward_number?: string | null
@@ -386,6 +401,9 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          latitude?: number | null
+          location_updated_at?: string | null
+          longitude?: number | null
           name?: string
           panchayath_id?: string
           ward_number?: string | null
@@ -406,6 +424,7 @@ export type Database = {
     }
     Functions: {
       get_public_delivery_partners: { Args: never; Returns: Json }
+      get_public_google_maps_key: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
